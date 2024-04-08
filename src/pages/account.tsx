@@ -2,9 +2,10 @@
 
 import {useSession} from 'next-auth/react';
 import Image from 'next/image';
-import React from 'react';
+import React, {useState} from 'react';
 
 import {useRouter} from "next/router";
+import UserService from "@/services/UserService";
 
 interface AccountPageProps {
 
@@ -15,11 +16,40 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
 
     const {data: session} = useSession();
 
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+
+
     const handleLogoClick = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         // Redirect to the search page with the query
         router.push(`/`).then(() => {
             console.log('Routing to Dashboard');
+        });
+    };
+
+    const handleLogin = (e: { preventDefault: () => void; }) => {
+        e.preventDefault();
+
+        UserService.signin({username, password}).then((response) => {
+            console.log(response);
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => {
+            console.log("Login request completed");
+        });
+    };
+
+    const handleSignUp = (e: { preventDefault: () => void; }) => {
+        e.preventDefault();
+
+        UserService.signup({username, email, password}).then((response) => {
+            console.log(response);
+        }).catch((error) => {
+            console.error(error);
+        }).finally(() => {
+            console.log("Signup request completed");
         });
     };
 
@@ -40,13 +70,42 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
                     <p className="text-lg text-center">You need to be signed in to access this page.</p>
                 </div>
 
-                <div className="text-center">
+                <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+                    <input
+                        type="username"
+                        placeholder="Username"
+                        className="border border-gray-300 px-4 py-2 rounded-xl"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        className="border border-gray-300 px-4 py-2 rounded-xl"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
                     <button
-                        className="border border-blue-400 px-6 py-4 hover:bg-blue-50 rounded-xl inline-flex justify-center"
-                        onClick={() => {
-                        }}>
+                        type="submit"
+                        className="border border-blue-400 px-6 py-2 hover:bg-blue-50 rounded-xl inline-flex justify-center"
+                    >
+                        Sign In
                     </button>
-                </div>
+                    <a href="#forgot-password" className="text-center text-sm text-blue-600 hover:underline">
+                        Forgot password?
+                    </a>
+                    <button
+                        type="button"
+                        onClick={handleSignUp}
+                        className="border border-blue-400 px-6 py-2 mt-4 hover:bg-blue-50 rounded-xl inline-flex justify-center"
+                    >
+                        Sign Up
+                    </button>
+                </form>
+
+
             </main>
         );
     }
