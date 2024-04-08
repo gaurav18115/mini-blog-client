@@ -10,6 +10,7 @@ import {SessionProvider} from 'next-auth/react';
 
 import Notification from "@/components/NotificationComponent";
 import {NotificationProvider} from "@/contexts/NotificationContext";
+import BackgroundBlurComponent from "@/components/BackgroundBlurComponent";
 
 function MyApp({Component, pageProps}: AppProps) {
     const {
@@ -66,6 +67,7 @@ function MyApp({Component, pageProps}: AppProps) {
             <SessionProvider session={pageProps.session}>
                 <NotificationProvider>
                     <Notification/>
+                    <BackgroundBlurComponent />
                     <Component {...pageProps} />
                 </NotificationProvider>
             </SessionProvider>
