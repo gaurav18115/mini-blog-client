@@ -13,7 +13,7 @@ const HeaderComponent: React.FC = () => {
                 <a
                     className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
                     href="/account"
-                    target="_blank"
+
                     rel="noopener noreferrer"
                 >
                     Sign In

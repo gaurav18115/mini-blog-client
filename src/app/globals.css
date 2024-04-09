@@ -8,7 +8,7 @@
   --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
@@ -30,4 +30,39 @@ body {
   .text-balance {
     text-wrap: none;
   }
+}
+
+/* Notification */
+
+.notification {
+  position: fixed;
+  top: -40px;
+  width: 100%;
+  padding: 12px 20px;
+  text-align: center;
+  color: #fff;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.5s ease-out;
+}
+
+.show-notification {
+  opacity: 1;
+  transform: translate(0, 0px);
+  top: 0;
+}
+
+.hide-notification {
+  opacity: 0;
+  transform: translate(0, -20px);
+  top: -40px;
+  pointer-events: none;
+}
+
+.success {
+  background-color: #3bc43b;
+}
+
+.error {
+  background-color: #ff5353;
 }

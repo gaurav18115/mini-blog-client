@@ -1,11 +1,13 @@
 // pages/account.tsx
 
-import {useSession} from 'next-auth/react';
+import {signIn, useSession} from 'next-auth/react';
+
 import Image from 'next/image';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {useRouter} from "next/router";
 import UserService from "@/services/UserService";
+import {useNotification} from "@/contexts/NotificationContext";
 
 interface AccountPageProps {
 
@@ -13,13 +15,24 @@ interface AccountPageProps {
 
 const AccountPage: React.FC<AccountPageProps> = ({}) => {
     const router = useRouter();
-
     const {data: session} = useSession();
+    const {showNotification} = useNotification();
 
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
+    useEffect(() => {
+
+        if (session?.access_token) {
+            console.log("Access Token:", session.access_token);
+            // Here you can use session.accessToken to make authenticated requests
+            // For example:
+            // UserService.getUserProfile(session.accessToken).then(userProfile => {
+            //     console.log(userProfile);
+            // });
+        }
+    }, [session]);
 
     const handleLogoClick = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -29,16 +42,23 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
         });
     };
 
-    const handleLogin = (e: { preventDefault: () => void; }) => {
+    const handleLogin = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
 
-        UserService.signin({username, password}).then((response) => {
-            console.log(response);
-        }).catch((error) => {
-            console.error(error);
-        }).finally(() => {
-            console.log("Login request completed");
+        const result = await signIn('credentials', {
+            redirect: false, // Prevents redirecting to another page
+            username,
+            password,
         });
+
+        if (result?.error) {
+            // Handle error
+            showNotification(result.error, "error");
+        } else {
+            // Successfully signed in
+            console.log("Login successful");
+            // You might want to redirect the user or perform other actions
+        }
     };
 
     const handleSignUp = (e: { preventDefault: () => void; }) => {
