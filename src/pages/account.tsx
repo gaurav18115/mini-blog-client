@@ -1,6 +1,7 @@
 // pages/account.tsx
 
-import {signIn, useSession} from 'next-auth/react';
+import {signIn, signOut, useSession} from 'next-auth/react';
+import {jwtDecode} from 'jwt-decode';
 
 import Image from 'next/image';
 import React, {useEffect, useState} from 'react';
@@ -8,6 +9,16 @@ import React, {useEffect, useState} from 'react';
 import {useRouter} from "next/router";
 import UserService from "@/services/UserService";
 import {useNotification} from "@/contexts/NotificationContext";
+import BlogPostsGridComponent from "@/components/BlogPostsGridComponent";
+import BlogPostService from "@/services/BlogPostService";
+import {BlogPost} from "@/types/posts";
+
+interface DecodedToken {
+    exp?: number;
+    iat?: number;
+    sub?: string;
+    // Include other fields as necessary.
+}
 
 interface AccountPageProps {
 
@@ -16,23 +27,47 @@ interface AccountPageProps {
 const AccountPage: React.FC<AccountPageProps> = ({}) => {
     const router = useRouter();
     const {data: session} = useSession();
+
     const {showNotification} = useNotification();
 
     const [email, setEmail] = useState('');
+    const [userImage, setUserImage] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    useEffect(() => {
+    const [myPosts, setMyPosts] = useState<BlogPost[]>([]);
 
+    useEffect(() => {
         if (session?.access_token) {
             console.log("Access Token:", session.access_token);
             // Here you can use session.accessToken to make authenticated requests
-            // For example:
-            // UserService.getUserProfile(session.accessToken).then(userProfile => {
-            //     console.log(userProfile);
-            // });
+
+            const decoded = jwtDecode(session.access_token) as DecodedToken;
+            if (decoded.exp && decoded.iat) {
+                const remainingTime = decoded.exp - decoded.iat;
+                console.log("Remaining Time:", remainingTime);
+            }
+            setUsername(decoded.sub || '');
+            console.log("Decoded Token:", decoded);
         }
+
     }, [session]);
+
+    useEffect(() => {
+        // Get posts by user
+        const getPosts = () => {
+            BlogPostService.getMyBlogPosts(session?.access_token).then((posts) => {
+                console.log("My Posts:", posts);
+                setMyPosts(posts || []);
+            }).catch((error) => {
+                if (error.response && error.response.status === 401) {
+                    handleLogout();
+                }
+            });
+        }
+
+        getPosts();
+    }, [session?.access_token]);
 
     const handleLogoClick = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -60,6 +95,11 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
             // You might want to redirect the user or perform other actions
         }
     };
+
+    const handleLogout = async () => {
+        await signOut();
+        router.reload();
+    }
 
     const handleSignUp = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
@@ -124,29 +164,41 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
                         Sign Up
                     </button>
                 </form>
-
-
             </main>
         );
     }
 
 
     const whenUserIsLoggedInUser = () => {
+        let initials = username ? (username.split(' ').map(name => name[0].toUpperCase())).join('') : "";
         return (
-            <main className="bg-white">
-                <div className="flex flex-col flex-grow gap-4 mb-12">
+            <main>
+                <div className="flex flex-col items-center p-4">
+                    <div className="flex justify-end items-center w-full mr-12">
 
+                        {userImage ? (
+                            <Image src={userImage} alt="User Profile Icon" className="rounded-full h-10 w-10"/>
+                        ) : (
+                            <div
+                                className="rounded-full h-10 w-10 bg-gradient-to-r from-gray-400 via-gray-300 to-gray-200 flex justify-center items-center">
+                                <span>{initials}</span>
+                            </div>
+                        )}
 
+                    </div>
+                    <hr className="divider w-full border-b border-gray-400 my-4"/>
+                </div>
+                <div className="px-8 py-4">
+                    <BlogPostsGridComponent posts={myPosts}/>
                 </div>
             </main>
         );
     }
 
-
     // Signed In
     return (
         <main className="min-h-screen">
-            {session && session.user ? (
+            {session && session.access_token ? (
                 whenUserIsLoggedInUser()
             ) : (
                 whenUserIsNotLoggedIn()
@@ -156,8 +208,6 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
 };
 
 export async function getServerSideProps() {
-
-
     return {props: {}};
 }
 

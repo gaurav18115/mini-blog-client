@@ -1,7 +1,7 @@
 // components/NotificationProvider.js
 
 import React, { createContext, useState, useContext } from 'react';
-import {Notification} from "@/common/types";
+import {Notification} from "@/types/posts";
 
 interface NotificationContextType {
     showNotification: (message: string, type: string) => void;

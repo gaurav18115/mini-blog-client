@@ -1,7 +1,7 @@
 // components/Notification.js
 
 import React, { useState, useEffect } from 'react';
-import {Notification} from "@/common/types";
+import {Notification} from "@/types/posts";
 import {useNotification} from "@/contexts/NotificationContext";
 
 
