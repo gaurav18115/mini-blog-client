@@ -1,4 +1,4 @@
-import axios, {AxiosError} from 'axios';
+import axios from 'axios';
 import {setupCache} from 'axios-cache-interceptor';
 
 import {POSTS_ENDPOINT} from '@/common/api';
@@ -12,16 +12,18 @@ setupCache(axiosCachedInstance, {
     ttl: isDevelopment ? 1000 : five_minutes,
 });
 
-const BlogPostService = {
+
+const PostService = {
 
     async addNewBlogPost(newData: BlogPost, token: string): Promise<BlogPost | null> {
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            }
             const response = await axios.post(`${POSTS_ENDPOINT}`, newData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
+                headers,
             });
             return response.data as BlogPost;
         } catch (error) {
@@ -34,12 +36,13 @@ const BlogPostService = {
 
         try {
             if (cache) {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }
                 const response = await axiosCachedInstance.get(`${POSTS_ENDPOINT}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers
                 });
                 return response.data as BlogPost[];
             } else {
@@ -67,7 +70,7 @@ const BlogPostService = {
     async getBlogPost(id: string, cache: boolean = true): Promise<BlogPost | null> {
         try {
             if (cache) {
-                const response = await axiosCachedInstance.get(`${POSTS_ENDPOINT}/${id}`);
+                const response = await axiosCachedInstance.get(`${POSTS_ENDPOINT}${id}`);
                 return response.data as BlogPost;
             } else {
                 const response = await axios.get(`${POSTS_ENDPOINT}/${id}`);
@@ -81,7 +84,7 @@ const BlogPostService = {
 
     async getTopBlogPosts(): Promise<BlogPost[] | null> {
         try {
-            const response = await axiosCachedInstance.get(`${POSTS_ENDPOINT}/top`);
+            const response = await axiosCachedInstance.get(`${POSTS_ENDPOINT}top`);
             return response.data as BlogPost[];
         } catch (error) {
             console.error(`[BlogPostService.ts] Error fetching top blog posts: ${error}`);
@@ -91,12 +94,13 @@ const BlogPostService = {
 
     async updateBlogPost(postId: string, updateData: BlogPost, token: string): Promise<BlogPost | null> {
         try {
-            const response = await axios.patch(`${POSTS_ENDPOINT}/${postId}`, updateData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
+            const headers = {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            }
+            const response = await axios.put(`${POSTS_ENDPOINT}${postId}`, updateData, {
+                headers
             });
             return response.data as BlogPost;
         } catch (error) {
@@ -105,9 +109,27 @@ const BlogPostService = {
         }
     },
 
+    async publishBlogPost(postId: string, token: string): Promise<BlogPost | null> {
+        try {
+            const headers = {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`,
+            }
+            const response = await axios.post(`${POSTS_ENDPOINT}${postId}/publish`, {}, {
+                headers
+            });
+            return response.data as BlogPost;
+        } catch (error) {
+            console.error(`[BlogPostListService.ts] Error publishing blog posts for ID: ${postId}: ${error}`);
+            return null;
+        }
+    },
+
+
     async searchBlogPosts(searchQuery: string): Promise<BlogPost[]> {
         try {
-            const response = await axios.get(`${POSTS_ENDPOINT}/search?query=${searchQuery}`);
+            const response = await axios.get(`${POSTS_ENDPOINT}search?query=${searchQuery}`);
             return response.data as BlogPost[];
         } catch (error) {
             console.error(`[BlogPostService.ts] Error searching blog posts:${error}`);
@@ -116,4 +138,4 @@ const BlogPostService = {
     },
 };
 
-export default BlogPostService;
+export default PostService;

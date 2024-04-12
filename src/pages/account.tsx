@@ -10,7 +10,7 @@ import {useRouter} from "next/router";
 import UserService from "@/services/UserService";
 import {useNotification} from "@/contexts/NotificationContext";
 import BlogPostsGridComponent from "@/components/BlogPostsGridComponent";
-import BlogPostService from "@/services/BlogPostService";
+import PostService from "@/services/PostService";
 import {BlogPost} from "@/types/posts";
 
 interface DecodedToken {
@@ -56,7 +56,7 @@ const AccountPage: React.FC<AccountPageProps> = ({}) => {
     useEffect(() => {
         // Get posts by user
         const getPosts = () => {
-            BlogPostService.getMyBlogPosts(session?.access_token).then((posts) => {
+            PostService.getMyBlogPosts(session?.access_token).then((posts) => {
                 console.log("My Posts:", posts);
                 setMyPosts(posts || []);
             }).catch((error) => {

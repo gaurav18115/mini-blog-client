@@ -8,12 +8,12 @@ export type Notification = {
 // BlogPost
 
 export type BlogPost = {
+    id?: string;
+    author_name?: string;
     title: string;
-    status: string;
     content: string;
     category: string;
-    author_name: string;
-    id: string;
-    created_at: string;
-    updated_at: string;
+    status?: string;
+    created_at?: string;
+    updated_at?: string;
 }
